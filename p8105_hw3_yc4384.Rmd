@@ -1,0 +1,24 @@
+---
+title: "p8105_hw3_yc4384"
+author: "Yangyang Chen"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem_1
+
+1. Importing Data
+```{r}
+library(p8105.datasets)
+data("instacart")
+colnames(instacart)
+```
+
+2. Data Description
+
+* The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[3:7]`.
+
