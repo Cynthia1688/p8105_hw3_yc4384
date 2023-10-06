@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Problem_1
 
-1. Importing Data
+**1. Importing Data**
 ```{r, echo=FALSE, message=FALSE}
 library(p8105.datasets)
 library(tidyverse)
@@ -20,9 +20,9 @@ data("instacart")
 colnames(instacart)
 ```
 
-2. Data Description
+**2. Data Description**
 
-* The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[7:15]`. Dataset has the order records of each costumers, including product name, order number, user id, etc.
+* The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[7:15]`. Dataset has the order records of each costumers, including _product name, order number, user id_, etc.
 
 
 * There are **134** aisles, and  **fresh vegetables** aisles are the most items ordered from.
@@ -41,7 +41,7 @@ instacart |>
   filter(n_ranking>133) 
 ```
 
-* This plot shows the number of items ordered in each aisle, with limitation that to aisles with more than 10000 items ordered. 
+* This plot shows **the number of items ordered in each aisle**, with limitation that to aisles with more than 10000 items ordered. 
 ```{r}
 instacart |> 
   group_by(aisle) |>
@@ -52,7 +52,7 @@ instacart |>
   geom_histogram()
 ```
 
-* This table shows the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
+* This table shows **the three most popular items in each of the aisles** “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
 
 ```{r}
 instacart |> 
@@ -66,7 +66,7 @@ instacart |>
   knitr::kable()
 ```
 
-* This table shows the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week.
+* This table shows **the mean hour of the day** at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week.
 
 ```{r}
 instacart |> 
