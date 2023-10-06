@@ -12,13 +12,71 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Problem_1
 
 1. Importing Data
-```{r}
+```{r, echo=FALSE, message=FALSE}
 library(p8105.datasets)
+library(tidyverse)
+library(dplyr)
 data("instacart")
 colnames(instacart)
 ```
 
 2. Data Description
 
-* The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[3:7]`.
+* The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[7:15]`. Dataset has the order records of each costumers, including product name, order number, user id, etc.
+
+
+* There are **134** aisles, and  **fresh vegetables** aisles are the most items ordered from.
+```{r}
+instacart |> 
+  group_by(aisle) |> 
+  summarize(n = n()) |> 
+  count()
+```
+
+```{r}
+instacart |> 
+  group_by(aisle) |>
+  summarize(n = n()) |> 
+  mutate(n_ranking = min_rank(n)) |> 
+  filter(n_ranking>133) 
+```
+
+* This plot shows the number of items ordered in each aisle, with limitation that to aisles with more than 10000 items ordered. 
+```{r}
+instacart |> 
+  group_by(aisle) |>
+  summarize(n = n()) |> 
+  mutate(n_ranking = min_rank(n)) |> 
+  filter(n>10000) |> 
+  ggplot(aes(x = n, fill = aisle)) +
+  geom_histogram()
+```
+
+* This table shows the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
+
+```{r}
+instacart |> 
+  group_by(aisle) |> 
+  summarize(n = n()) |> 
+  filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") |> 
+  pivot_wider(
+    names_from = aisle,
+    values_from = n
+  ) |> 
+  knitr::kable()
+```
+
+* This table shows the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week.
+
+```{r}
+instacart |> 
+  group_by(product_name, order_dow) |> 
+  summarize(mean_hour = mean(order_hour_of_day)) |> 
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream" ) |> 
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  ) |> 
+  knitr::kable()
+```
 
