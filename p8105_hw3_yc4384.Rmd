@@ -56,13 +56,11 @@ instacart |>
 
 ```{r}
 instacart |> 
-  group_by(aisle) |> 
-  summarize(n = n()) |> 
+  group_by(aisle, product_name) |> 
   filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") |> 
-  pivot_wider(
-    names_from = aisle,
-    values_from = n
-  ) |> 
+  summarize(n = n()) |> 
+  filter(min_rank(desc(n)) < 4) |> 
+
   knitr::kable()
 ```
 
@@ -80,3 +78,4 @@ instacart |>
   knitr::kable()
 ```
 
+## Problem 2
