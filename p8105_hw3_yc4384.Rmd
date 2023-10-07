@@ -60,7 +60,6 @@ instacart |>
   filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") |> 
   summarize(n = n()) |> 
   filter(min_rank(desc(n)) < 4) |> 
-
   knitr::kable()
 ```
 
@@ -79,3 +78,96 @@ instacart |>
 ```
 
 ## Problem 2
+**1. Importing Data**
+```{r}
+data("brfss_smart2010")
+```
+
+**2. Data cleaning:**
+
+* Format the data to use appropriate variable names;
+
+* Focus on the “Overall Health” topic;
+
+* Include only responses from “Excellent” to “Poor”;
+
+* Organize responses as a factor taking levels ordered from “Poor” to “Excellent”.
+```{r, results='hide'}
+brfss_clean_df = 
+  brfss_smart2010 |> 
+  janitor::clean_names() |> 
+  filter(topic == "Overall Health") |> 
+  filter(response %in% c("Excellent", "Very good", "Good", "Fair", "Poor")) |> 
+  mutate(response = factor(response, levels = c("Excellent", "Very good", "Good", "Fair", "Poor")))
+
+```
+
+* In **2002**, states **`MA, NJ and PA`** were observed at 7 or more locations:
+```{r}
+brfss_clean_df |> 
+  filter(year==2002) |> 
+  group_by(locationabbr) |> 
+  distinct(locationdesc) |> 
+  summarize(n = n())|> 
+  filter(n>7) 
+```
+* In **2010**, states **`CA, FL, MA, MD, NC, NE, NJ, NY, OH, TX and WA`** were observed at 7 or more locations:
+```{r}
+brfss_clean_df |> 
+  filter(year==2010) |> 
+  group_by(locationabbr) |> 
+  distinct(locationdesc) |> 
+  summarize(n = n())|> 
+  filter(n>7) 
+```
+
+
+* **brfss_exce_df** dataset only includes Excellent responses, and contains year, state, and a variable that averages the data_value across locations within a state. 
+
+```{r}
+brfss_exce_df =
+  brfss_clean_df |> 
+  filter(response == "Excellent") |> 
+  select(c(year, locationabbr, locationdesc, data_value)) |> 
+  group_by(locationabbr, year) |> 
+  mutate(data_value_mean = mean(data_value, na.rm = TRUE))
+```
+
+* Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+```{r}
+brfss_exce_df |> 
+  ggplot(aes(x = year, y = data_value_mean, group = locationabbr, color = locationabbr)) +
+  geom_line() 
+  
+```
+
+* Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+```{r}
+
+brfss_p_exce_df = 
+  brfss_clean_df |> 
+    filter(response %in% c("Excellent", "Poor")) |> 
+    filter(year %in% c(2006, 2010)) |> 
+    filter(locationabbr == "NY") |> 
+    select(c(year, locationabbr, locationdesc, data_value, response)) |> 
+    group_by(locationabbr, year) 
+
+brfss_p_exce_df |>   
+  ggplot(aes(x = response, y = data_value, color = locationdesc)) +
+  geom_point() +
+  facet_grid(. ~ year)
+```
+
+## Problem 3
+Accelerometers have become an appealing alternative to self-report techniques for studying physical activity in observational studies and clinical trials, largely because of their relative objectivity. During observation periods, the devices can measure MIMS in a short period; one-minute intervals are common. Because accelerometers can be worn comfortably and unobtrusively, they produce around-the-clock observations.
+
+This problem uses accelerometer data collected on 250 participants in the NHANES study. The participants’ demographic data can be downloaded here, and their accelerometer data can be downloaded here. Variables *MIMS are the MIMS values for each minute of a 24-hour day starting at midnight.
+
+Load, tidy, merge, and otherwise organize the data sets. Your final dataset should include all originally observed variables; exclude participants less than 21 years of age, and those with missing demographic data; and encode data with reasonable variable classes (i.e. not numeric, and using factors with the ordering of tables and plots in mind).
+
+Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.
+
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.
+
+Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
+
