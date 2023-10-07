@@ -159,11 +159,44 @@ brfss_p_exce_df |>
 ```
 
 ## Problem 3
-Accelerometers have become an appealing alternative to self-report techniques for studying physical activity in observational studies and clinical trials, largely because of their relative objectivity. During observation periods, the devices can measure MIMS in a short period; one-minute intervals are common. Because accelerometers can be worn comfortably and unobtrusively, they produce around-the-clock observations.
 
-This problem uses accelerometer data collected on 250 participants in the NHANES study. The participants’ demographic data can be downloaded here, and their accelerometer data can be downloaded here. Variables *MIMS are the MIMS values for each minute of a 24-hour day starting at midnight.
+**1. Data cleaning and merging:**
 
-Load, tidy, merge, and otherwise organize the data sets. Your final dataset should include all originally observed variables; exclude participants less than 21 years of age, and those with missing demographic data; and encode data with reasonable variable classes (i.e. not numeric, and using factors with the ordering of tables and plots in mind).
+* Dataset includes all originally observed variables; 
+* Exclude participants less than 21 years of age, and those with missing demographic data; 
+* Encode data with reasonable variable classes (i.e. not numeric, and using factors with the ordering of tables and plots in mind).
+```{r}
+acc_df = 
+  read_csv("data/nhanes_accel.csv") |> 
+  janitor::clean_names()
+cov_df = 
+  read_csv("data/nhanes_covar.csv", skip = 4) |> 
+  janitor::clean_names()
+cov_clean_df =
+  cov_df |>
+  filter(age >= 21) |> 
+  drop_na() |> 
+  mutate(
+    sex = 
+      case_match(
+        sex, 
+        1 ~ "male", 
+        2 ~ "female"),
+    sex = as.factor(sex)) |> 
+  mutate(
+    education = 
+      case_match(
+        education, 
+        1 ~ "level_1", 
+        2 ~ "level_2",
+        3 ~ "level_3"),
+    education = as.factor(education)) 
+
+mims_data = 
+  left_join(cov_clean_df, acc_df, by = "seqn") 
+```
+
+
 
 Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.
 
