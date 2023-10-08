@@ -25,15 +25,15 @@ colnames(instacart)
 * The dataset **instacart** is a `r nrow(instacart)` * `r ncol(instacart)` dataframe. It contains `r nrow(instacart)` observations and key variables are: `r colnames(instacart)[7:15]`. Dataset has the order records of each costumers, including _product name, order number, user id_, etc.
 
 
-* There are **134** aisles, and  **fresh vegetables** aisles are the most items ordered from.
-```{r}
+* There are **134** aisles, and  **fresh vegetables** aisles are the most items ordered from:
+```{r, message=FALSE}
 instacart |> 
   group_by(aisle) |> 
   summarize(n = n()) |> 
   count()
 ```
 
-```{r}
+```{r, message=FALSE}
 instacart |> 
   group_by(aisle) |>
   summarize(n = n()) |> 
@@ -41,8 +41,8 @@ instacart |>
   filter(n_ranking>133) 
 ```
 
-* This plot shows **the number of items ordered in each aisle**, with limitation that to aisles with more than 10000 items ordered. 
-```{r}
+* Following plot shows **the number of items ordered in each aisle**, with limitation that to aisles with more than 10000 items ordered:
+```{r, message=FALSE}
 instacart |> 
   group_by(aisle) |>
   summarize(n = n()) |> 
@@ -52,9 +52,9 @@ instacart |>
   geom_histogram()
 ```
 
-* This table shows **the three most popular items in each of the aisles** “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
+* Following table shows **the three most popular items in each of the aisles** “baking ingredients”, “dog food care”, and “packaged vegetables fruits”:
 
-```{r}
+```{r, message=FALSE}
 instacart |> 
   group_by(aisle, product_name) |> 
   filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") |> 
@@ -63,9 +63,9 @@ instacart |>
   knitr::kable()
 ```
 
-* This table shows **the mean hour of the day** at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week.
+* Following table shows the mean hour of the day** at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week:
 
-```{r}
+```{r, message=FALSE}
 instacart |> 
   group_by(product_name, order_dow) |> 
   summarize(mean_hour = mean(order_hour_of_day)) |> 
@@ -79,7 +79,7 @@ instacart |>
 
 ## Problem 2
 **1. Importing Data**
-```{r}
+```{r, message=FALSE}
 data("brfss_smart2010")
 ```
 
@@ -92,7 +92,7 @@ data("brfss_smart2010")
 * Include only responses from “Excellent” to “Poor”;
 
 * Organize responses as a factor taking levels ordered from “Poor” to “Excellent”.
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 brfss_clean_df = 
   brfss_smart2010 |> 
   janitor::clean_names() |> 
@@ -103,7 +103,7 @@ brfss_clean_df =
 ```
 
 * In **2002**, states **`MA, NJ and PA`** were observed at 7 or more locations:
-```{r}
+```{r, message=FALSE}
 brfss_clean_df |> 
   filter(year==2002) |> 
   group_by(locationabbr) |> 
@@ -112,7 +112,7 @@ brfss_clean_df |>
   filter(n>7) 
 ```
 * In **2010**, states **`CA, FL, MA, MD, NC, NE, NJ, NY, OH, TX and WA`** were observed at 7 or more locations:
-```{r}
+```{r, message=FALSE}
 brfss_clean_df |> 
   filter(year==2010) |> 
   group_by(locationabbr) |> 
@@ -122,9 +122,9 @@ brfss_clean_df |>
 ```
 
 
-* **brfss_exce_df** dataset only includes Excellent responses, and contains year, state, and a variable that averages the data_value across locations within a state. 
+**brfss_exce_df:** dataset only includes Excellent responses, and contains year, state, and a variable that averages the data_value across locations within a state:
 
-```{r}
+```{r, message=FALSE}
 brfss_exce_df =
   brfss_clean_df |> 
   filter(response == "Excellent") |> 
@@ -133,16 +133,16 @@ brfss_exce_df =
   mutate(data_value_mean = mean(data_value, na.rm = TRUE))
 ```
 
-* Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
-```{r}
+**Spaghetti plot:** average value over time within a state:
+```{r, message=FALSE}
 brfss_exce_df |> 
   ggplot(aes(x = year, y = data_value_mean, group = locationabbr, color = locationabbr)) +
   geom_line() 
   
 ```
 
-* Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
-```{r}
+**Two-panel plot** shows for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State:
+```{r, message=FALSE}
 
 brfss_p_exce_df = 
   brfss_clean_df |> 
@@ -165,7 +165,7 @@ brfss_p_exce_df |>
 * Dataset includes all originally observed variables; 
 * Exclude participants less than 21 years of age, and those with missing demographic data; 
 * Encode data with reasonable variable classes (i.e. not numeric, and using factors with the ordering of tables and plots in mind).
-```{r}
+```{r, message=FALSE}
 acc_df = 
   read_csv("data/nhanes_accel.csv") |> 
   janitor::clean_names()
@@ -187,20 +187,66 @@ cov_clean_df =
     education = 
       case_match(
         education, 
-        1 ~ "level_1", 
-        2 ~ "level_2",
-        3 ~ "level_3"),
+        1 ~ "Low", 
+        2 ~ "Median",
+        3 ~ "High"),
     education = as.factor(education)) 
 
 mims_data = 
   left_join(cov_clean_df, acc_df, by = "seqn") 
 ```
+**2. Data Visualization**
+
+**Table**: the number of men and women in each education category.
+```{r, message=FALSE}
+mims_data |> 
+  group_by(sex, education) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = sex,
+    values_from = n
+  ) |> 
+  knitr::kable()
+```
+**Comments:**
+
+* More females have received high and low level education than male.
+
+* More male have received median level education than female.
+
+**Plot**: Create a visualization of the age distributions for men and women in each education category.
+```{r, message=FALSE}
+mims_data |> 
+  group_by(sex, education, age) |> 
+  summarize(n = n()) |> 
+  ggplot(aes(x = age, fill = education)) +
+  geom_density(alpha = .4, adjust = .5, color = "blue") +
+  facet_wrap(~ sex, nrow = 1)
+```
+**Comments:** 
+
+* We can observe that female group received high education in age 60 - 80; While male received more low education than female. 
+* Besides, female in each age interval received balanced education levels, and reaches education peak in high education; However, male reaches education peak in low level.
 
 
-
-Produce a reader-friendly table for the number of men and women in each education category, and create a visualization of the age distributions for men and women in each education category. Comment on these items.
+**Three Panel Plot:**
 
 Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.
+
+```{r, message=FALSE}
+mims_data |> 
+  select(seqn, age, education, sex, min1:min1440) |> 
+    pivot_longer(
+      seqn,
+      names_to = "total_activities", 
+      values_to = min1:min1440
+    ) |> 
+  ggplot(aes(x = age, y = total_activities, color = sex)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom") +
+  facet_wrap(~ education, nrow = 1)
+```
 
 Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
 
