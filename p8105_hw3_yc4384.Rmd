@@ -44,12 +44,15 @@ instacart |>
 * Following plot shows **the number of items ordered in each aisle**, with limitation that to aisles with more than 10000 items ordered:
 ```{r, message=FALSE}
 instacart |> 
-  group_by(aisle) |>
-  summarize(n = n()) |> 
-  mutate(n_ranking = min_rank(n)) |> 
+  count(aisle) |>
+  mutate(aisle = fct_reorder(aisle, n)) |> 
   filter(n>10000) |> 
-  ggplot(aes(x = n, fill = aisle)) +
-  geom_histogram()
+  ggplot(aes(x = aisle, y = n)) +
+  geom_point() +
+  labs(title = "Number of Items Ordered in Each Aisle") +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1) # rotate the x-axis labels
+    )
 ```
 
 * Following table shows **the three most popular items in each of the aisles** “baking ingredients”, “dog food care”, and “packaged vegetables fruits”:
@@ -63,7 +66,7 @@ instacart |>
   knitr::kable()
 ```
 
-* Following table shows the mean hour of the day** at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week:
+* Following table shows the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week:
 
 ```{r, message=FALSE}
 instacart |> 
@@ -102,23 +105,23 @@ brfss_clean_df =
 
 ```
 
-* In **2002**, states **`MA, NJ and PA`** were observed at 7 or more locations:
+* In **2002**, states **`CT, FL, MA, NJ, NC and PA`** were observed at 7 or more locations:
 ```{r, message=FALSE}
 brfss_clean_df |> 
   filter(year==2002) |> 
   group_by(locationabbr) |> 
   distinct(locationdesc) |> 
   summarize(n = n())|> 
-  filter(n>7) 
+  filter(n>6) 
 ```
-* In **2010**, states **`CA, FL, MA, MD, NC, NE, NJ, NY, OH, TX and WA`** were observed at 7 or more locations:
+* In **2010**, states **`CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX and WA`** were observed at 7 or more locations:
 ```{r, message=FALSE}
 brfss_clean_df |> 
   filter(year==2010) |> 
   group_by(locationabbr) |> 
   distinct(locationdesc) |> 
   summarize(n = n())|> 
-  filter(n>7) 
+  filter(n>6) 
 ```
 
 
@@ -146,7 +149,7 @@ brfss_exce_df |>
 
 brfss_p_exce_df = 
   brfss_clean_df |> 
-    filter(response %in% c("Excellent", "Poor")) |> 
+    filter(response %in% c("Excellent",  "Very good", "Good", "Fair", "Poor")) |> 
     filter(year %in% c(2006, 2010)) |> 
     filter(locationabbr == "NY") |> 
     select(c(year, locationabbr, locationdesc, data_value, response)) |> 
@@ -168,7 +171,7 @@ brfss_p_exce_df |>
 ```{r, message=FALSE}
 acc_df = 
   read_csv("data/nhanes_accel.csv") |> 
-  janitor::clean_names()
+  janitor::clean_names() 
 cov_df = 
   read_csv("data/nhanes_covar.csv", skip = 4) |> 
   janitor::clean_names()
@@ -214,7 +217,8 @@ mims_data |>
 
 * More male have received median level education than female.
 
-**Plot**: Create a visualization of the age distributions for men and women in each education category.
+
+**Plot:** Create a visualization of the age distributions for men and women in each education category.
 ```{r, message=FALSE}
 mims_data |> 
   group_by(sex, education, age) |> 
@@ -223,30 +227,64 @@ mims_data |>
   geom_density(alpha = .4, adjust = .5, color = "blue") +
   facet_wrap(~ sex, nrow = 1)
 ```
+
+
 **Comments:** 
 
 * We can observe that female group received high education in age 60 - 80; While male received more low education than female. 
 * Besides, female in each age interval received balanced education levels, and reaches education peak in high education; However, male reaches education peak in low level.
 
 
-**Three Panel Plot:**
+**Plotting Aggregation Data**
 
-Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot.
+* Tidy dataset: Aggregate across minutes to create a total activity variable for each participant. 
+* Plotting: Plot these total activities (y-axis) against age (x-axis), compare men to women and have separate panels for each education level, including a trend line or a smooth to illustrate differences. 
 
 ```{r, message=FALSE}
 mims_data |> 
   select(seqn, age, education, sex, min1:min1440) |> 
     pivot_longer(
-      seqn,
-      names_to = "total_activities", 
-      values_to = min1:min1440
+      min1:min1440,
+      names_to = "minutes", 
+      values_to = "mims_per_min"
     ) |> 
+  group_by(seqn, sex, age, education) |> 
+  summarise(total_activities = sum(mims_per_min)) |> 
   ggplot(aes(x = age, y = total_activities, color = sex)) + 
   geom_point(alpha = .5) +
   geom_smooth(se = FALSE) + 
   theme(legend.position = "bottom") +
-  facet_wrap(~ education, nrow = 1)
+  facet_wrap(~ education, nrow = 1) +
+  labs(title = "Daily MIMS Acitivity Sorted by Education Levels and Sex")
 ```
+**Comment:**
 
-Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
+* Female has higher education level than male in "High" and "Median" level group. 
+
+**Three-Panel Plot:**
+
+* This plot shows the 24-hour activity time courses for each education level.
+
+* Different colors indicate sexes. 
+
+```{r, message=FALSE}
+mims_data |>   
+  select(seqn, age, education, sex, min1:min1440) |> 
+  pivot_longer(
+      min1:min1440,
+      names_to = "minutes", 
+      values_to = "mims_per_min"
+    ) |> 
+ggplot(aes(x = minutes, y = mims_per_min, color = sex)) +
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) +
+  theme(legend.position = "bottom") +
+  facet_grid(education ~ .) +
+  labs(title = "MIMS Activity per Minute Sorted by Education Levels and Sex")
+```
+**Description:**
+
+* Conclusion: Female with higher education levels has higher mims activity. 
+* Trend: Higher education level could lead to higher mims activity per minutes.
+
 
